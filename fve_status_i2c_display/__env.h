@@ -3,6 +3,6 @@
 
 #define AIO_SERVER "mqtt IP address"
 #define AIO_SERVERPORT 1883
-#define AIO_USER "mqtt user"
-#define AIO_PASS "mqtt pass"
-#define AIO_CHANNEL_NAME "SOME_ROOT_NAMESPACE/status"
+
+#define AIO_CHANNEL_NAME_STATUS "growatt-agent/inverter1/status"
+#define AIO_CHANNEL_NAME_BATTERY "growatt-agent/inverter1/battery"
