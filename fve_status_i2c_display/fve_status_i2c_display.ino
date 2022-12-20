@@ -8,25 +8,22 @@
 #include "env.h"
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-
-
-/************************* Adafruit.io Setup *********************************/
-
 WiFiClient client;
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT);
 Adafruit_MQTT_Subscribe mqttSubscription = Adafruit_MQTT_Subscribe(&mqtt, AIO_CHANNEL_NAME);
 
-StaticJsonDocument<200> jsonFilter;
-StaticJsonDocument<400> doc;
+StaticJsonDocument<800> document;
+StaticJsonDocument<400> jsonFilter;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(WLAN_SSID);
 
+  WiFi.hostname("FVE stats");
   WiFi.begin(WLAN_SSID, WLAN_PASS);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -38,45 +35,58 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  // initialize LCD
+  
   lcd.init();
-  // turn on LCD backlight
   lcd.backlight();
 
   mqtt.subscribe(&mqttSubscription);
+  mqttSubscription.setCallback(storeData);
 
-
-  jsonFilter["Epv1_todayL"] = true;
-  jsonFilter["BatterySOC"] = true;
-  jsonFilter["Ppv1L"] = true;
-  jsonFilter["OP_WattL"] = true;
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
   MQTT_connect();
-
-  Adafruit_MQTT_Subscribe *subscription;
-  while ((subscription = mqtt.readSubscription(5000))) {
-    if (subscription == &mqttSubscription) {
-      Serial.print(F("Got: "));
-      deserializeJson(doc, (char *)mqttSubscription.lastread, DeserializationOption::Filter(jsonFilter));
-      //serializeJsonPretty(doc, Serial);
-    }
-  }
+  digitalWrite(LED_BUILTIN, 1);
+  //mqtt.processPackets(1000);
+  digitalWrite(LED_BUILTIN, 0);
+  //Serial.println("loop");
 
   if (!mqtt.ping()) {
     mqtt.disconnect();
   }
 
+  printStatsToDisplay(2000);
+}
+
+void storeData(char *data, uint16_t l) {
+  jsonFilter["Epv1_todayL"] = true;
+  jsonFilter["BatterySOC"] = true;
+  jsonFilter["Ppv1L"] = true;
+  jsonFilter["OP_WattL"] = true;
+  jsonFilter["Status"] = true;
+
+  
+  deserializeJson(document, data, DeserializationOption::Filter(jsonFilter));
+  
+  
+}
+
+void printStatsToDisplay(int pauseInMs) {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Pc:" + doc["Epv1_todayL"].as<String>() + "kW ");
-  lcd.print("Bs:" + doc["BatterySOC"].as<String>() + "%");
-  lcd.setCursor(0, 1);
-  lcd.print("Pv:" + doc["Ppv1L"].as<String>() + "W ");
-  lcd.print("Po:" + doc["OP_WattL"].as<String>() + "W");
+  lcd.print("S:" + document["Status"].as<String>());
+  delay(pauseInMs);
 
-  delay(1000);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Pc:" + document["Epv1_todayL"].as<String>() + "kW ");
+  lcd.print("Bs:" + document["BatterySOC"].as<String>() + "%");
+  lcd.setCursor(0, 1);
+  lcd.print("Pv:" + document["Ppv1L"].as<String>() + "W ");
+  lcd.print("Po:" + document["OP_WattL"].as<String>() + "W");
+
+  delay(pauseInMs);
 }
 
 // Function to connect and reconnect as necessary to the MQTT server.
