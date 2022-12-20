@@ -4,17 +4,9 @@
 #include <ArduinoJson.h>
 #include <ArduinoJson.hpp>
 #include <ESP8266WiFi.h>
+#include "env.h"
 
-#define STATUS_LED 16
-
-#define WIFI_NAME "myWifiName"
-#define WIFI_PASS "myWifiPass"
-
-#define AIO_SERVER "mqtt IP address"
-#define AIO_SERVERPORT 1883
-#define AIO_USER "mqtt user"
-#define AIO_PASS "mqtt pass"
-#define AIO_CHANNEL_NAME "SOME_ROOT_NAMESPACE/sensors/door_V1/"
+#define STATUS_LED LED_BUILTIN
 
 WiFiClient client;
 IPAddress ipAddress;
@@ -147,6 +139,7 @@ void MQTT_connect() {
     Serial.println(mqtt.connectErrorString(ret));
     Serial.println("Retrying MQTT connection in 5 seconds...");
     mqtt.disconnect();
+    blinkStatusLed(3, false, 100);
     delay(5000);  // wait 5 seconds
     retries--;
     if (retries == 0) {
