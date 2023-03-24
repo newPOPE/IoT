@@ -81,14 +81,14 @@ void storeBatteryData(char *data, uint16_t l) {
 void printStatsToDisplay() {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("S:" + statusDocument["Status"].as<String>());
+  lcd.print("S: " + statusDocument["Status"].as<String>());
   lcd.setCursor(0, 1);
   lcd.print("Batt: ");
   lcd.print(batteryDocument["BatterySOC"].as<String>() + "% | ");
   lcd.print(batteryDocument["Bat_pwrDir"].as<String>() + "W");
   lcd.setCursor(0, 2);
   lcd.print("PV: " + statusDocument["Ppv1L"].as<String>() + "W | ");
-  lcd.print(statusDocument["Epv1_todayL"].as<String>() + "kW");
+  lcd.print(statusDocument["Epv1_todayL"].as<String>() + "kWh");
   lcd.setCursor(0, 3);
   lcd.print("Load: " + statusDocument["OP_WattL"].as<String>() + "W");
 }
