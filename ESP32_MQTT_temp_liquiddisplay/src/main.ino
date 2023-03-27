@@ -1,14 +1,13 @@
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
 #include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <WiFiManager.h>
-
+#include <WiFiManagerTz.h>
 #include "Config.h"
-#include "Types.h"
 #include "DS18B20Sensor.h"
+#include "Display.h"
+
 
 sensorState_t state;
 
@@ -29,7 +28,7 @@ uint32_t statusPublishPreviousMillis = 0;
 const uint16_t statusPublishInterval = 30000;  // 30 seconds = 30000 milliseconds
 
 char identifier[24];
-#define FIRMWARE_PREFIX "esp8266-ds18b20-temperature-sensor"
+#define FIRMWARE_PREFIX "esp32-ds18b20-temperature-sensor"
 #define AVAILABILITY_ONLINE "online"
 #define AVAILABILITY_OFFLINE "offline"
 char MQTT_TOPIC_AVAILABILITY[128];
@@ -220,7 +219,7 @@ void publishAutoConfig() {
 
   device["identifiers"] = identifiers;
   device["manufacturer"] = "N/A";
-  device["model"] = "ESP8266 - DS18B20";
+  device["model"] = "ESP32 - DS18B20";
   device["name"] = identifier;
   device["sw_version"] = "2023.03.0";
 

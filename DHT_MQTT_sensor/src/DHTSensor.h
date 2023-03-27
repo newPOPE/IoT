@@ -32,7 +32,7 @@ namespace DHTSensor {
 
     float hic = dht.computeHeatIndex(t, h, false);
     //float correction = -2.0; // DHT22 from ALI
-    float correction = -2.0;
+    float correction = -1.0;
 
     state.temperature = t + correction;
     state.humidity = h;
