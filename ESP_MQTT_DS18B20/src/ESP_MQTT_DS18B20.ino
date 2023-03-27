@@ -8,7 +8,9 @@
 
 #include "Config.h"
 #include "Types.h"
+#include "Display.h"
 #include "DS18B20Sensor.h"
+#include "DHTSensor.h"
 
 sensorState_t state;
 
@@ -37,7 +39,11 @@ char MQTT_TOPIC_STATE[128];
 char MQTT_TOPIC_COMMAND[128];
 
 char MQTT_TOPIC_AUTOCONF_WIFI_SENSOR[128];
-char MQTT_TOPIC_AUTOCONF_TEMP_SENSOR[128];
+char MQTT_TOPIC_AUTOCONF_TEMP1_SENSOR[128];
+char MQTT_TOPIC_AUTOCONF_TEMP11_SENSOR[128];
+char MQTT_TOPIC_AUTOCONF_TEMP2_SENSOR[128];
+char MQTT_TOPIC_AUTOCONF_TEMPDHT_SENSOR[128];
+char MQTT_TOPIC_AUTOCONF_HUMIDHT_SENSOR[128];
 
 bool shouldSaveConfig = false;
 
@@ -47,7 +53,10 @@ void saveConfigCallback() {
 
 void setup() {
   Serial.begin(9600);
+  Display::intro();
   DS18B20Sensor::setup();
+  DHTSensor::setup();
+  
 
   Serial.println("\n");
   Serial.print("Hello from ");
@@ -65,7 +74,12 @@ void setup() {
   snprintf(MQTT_TOPIC_STATE, 127, "%s/%s/state", FIRMWARE_PREFIX, identifier);
   snprintf(MQTT_TOPIC_COMMAND, 127, "%s/%s/command", FIRMWARE_PREFIX, identifier);
 
-  snprintf(MQTT_TOPIC_AUTOCONF_TEMP_SENSOR, 127, "homeassistant/sensor/%s/%s_temp/config", FIRMWARE_PREFIX, identifier);
+  snprintf(MQTT_TOPIC_AUTOCONF_TEMP1_SENSOR, 127, "homeassistant/sensor/%s/%s_temp1/config", FIRMWARE_PREFIX, identifier);
+  snprintf(MQTT_TOPIC_AUTOCONF_TEMP11_SENSOR, 127, "homeassistant/sensor/%s/%s_temp11/config", FIRMWARE_PREFIX, identifier);
+  snprintf(MQTT_TOPIC_AUTOCONF_TEMP2_SENSOR, 127, "homeassistant/sensor/%s/%s_temp2/config", FIRMWARE_PREFIX, identifier);
+  snprintf(MQTT_TOPIC_AUTOCONF_TEMPDHT_SENSOR, 127, "homeassistant/sensor/%s/%s_tempdht/config", FIRMWARE_PREFIX, identifier);
+  snprintf(MQTT_TOPIC_AUTOCONF_HUMIDHT_SENSOR, 127, "homeassistant/sensor/%s/%s_humidht/config", FIRMWARE_PREFIX, identifier);
+  
   snprintf(MQTT_TOPIC_AUTOCONF_WIFI_SENSOR, 127, "homeassistant/sensor/%s/%s_wifi/config", FIRMWARE_PREFIX, identifier);
 
   WiFi.hostname(identifier);
@@ -120,6 +134,8 @@ void setupOTA() {
 void loop() {
   ArduinoOTA.handle();
   DS18B20Sensor::handle(state);
+  Display::printTemp(state);
+  DHTSensor::handle(state);
   mqttClient.loop();
 
   const uint32_t currentMillis = millis();
@@ -198,8 +214,11 @@ void publishState() {
   wifiJson["ip"] = WiFi.localIP().toString();
   wifiJson["rssi"] = WiFi.RSSI();
 
-  stateJson["temperature"] = state.temperature;
-
+  stateJson["temperature1"] = state.temperature1;
+  stateJson["temperature11"] = state.temperature11;
+  stateJson["temperature2"] = state.temperature2;
+  stateJson["temperatureDht"] = state.temperatureDht;
+  stateJson["humiDht"] = state.humidityDht;
 
   stateJson["wifi"] = wifiJson.as<JsonObject>();
 
@@ -243,13 +262,65 @@ void publishAutoConfig() {
   autoconfPayload["device"] = device.as<JsonObject>();
   autoconfPayload["availability_topic"] = MQTT_TOPIC_AVAILABILITY;
   autoconfPayload["state_topic"] = MQTT_TOPIC_STATE;
-  autoconfPayload["name"] = identifier + String(" Temperature");
+  autoconfPayload["name"] = identifier + String(" Temperature1");
   autoconfPayload["unit_of_measurement"] = "°C";
-  autoconfPayload["value_template"] = "{{value_json.temperature | round(1, 'ceil') }}";
-  autoconfPayload["unique_id"] = identifier + String("_temperature");
+  autoconfPayload["value_template"] = "{{value_json.temperature1 | round(1, 'ceil') }}";
+  autoconfPayload["unique_id"] = identifier + String("_temperature1");
   autoconfPayload["icon"] = "mdi:water-boiler";
 
   serializeJson(autoconfPayload, mqttPayload);
-  mqttClient.publish(&MQTT_TOPIC_AUTOCONF_TEMP_SENSOR[0], &mqttPayload[0], true);
+  mqttClient.publish(&MQTT_TOPIC_AUTOCONF_TEMP1_SENSOR[0], &mqttPayload[0], true);
+  autoconfPayload.clear();
+
+  autoconfPayload["device"] = device.as<JsonObject>();
+  autoconfPayload["availability_topic"] = MQTT_TOPIC_AVAILABILITY;
+  autoconfPayload["state_topic"] = MQTT_TOPIC_STATE;
+  autoconfPayload["name"] = identifier + String(" Temperature11");
+  autoconfPayload["unit_of_measurement"] = "°C";
+  autoconfPayload["value_template"] = "{{value_json.temperature11 | round(1, 'ceil') }}";
+  autoconfPayload["unique_id"] = identifier + String("_temperature11");
+  autoconfPayload["icon"] = "mdi:water-boiler";
+
+  serializeJson(autoconfPayload, mqttPayload);
+  mqttClient.publish(&MQTT_TOPIC_AUTOCONF_TEMP11_SENSOR[0], &mqttPayload[0], true);
+  autoconfPayload.clear();
+
+  autoconfPayload["device"] = device.as<JsonObject>();
+  autoconfPayload["availability_topic"] = MQTT_TOPIC_AVAILABILITY;
+  autoconfPayload["state_topic"] = MQTT_TOPIC_STATE;
+  autoconfPayload["name"] = identifier + String(" Temperature2");
+  autoconfPayload["unit_of_measurement"] = "°C";
+  autoconfPayload["value_template"] = "{{value_json.temperature2 | round(1, 'ceil') }}";
+  autoconfPayload["unique_id"] = identifier + String("_temperature2");
+  autoconfPayload["icon"] = "mdi:water-boiler";
+
+  serializeJson(autoconfPayload, mqttPayload);
+  mqttClient.publish(&MQTT_TOPIC_AUTOCONF_TEMP2_SENSOR[0], &mqttPayload[0], true);
+  autoconfPayload.clear();
+
+  autoconfPayload["device"] = device.as<JsonObject>();
+  autoconfPayload["availability_topic"] = MQTT_TOPIC_AVAILABILITY;
+  autoconfPayload["state_topic"] = MQTT_TOPIC_STATE;
+  autoconfPayload["name"] = identifier + String(" TemperatureDht");
+  autoconfPayload["unit_of_measurement"] = "°C";
+  autoconfPayload["value_template"] = "{{value_json.temperatureDht | round(1, 'ceil') }}";
+  autoconfPayload["unique_id"] = identifier + String("_temperatureDht");
+  autoconfPayload["icon"] = "mdi:water-boiler";
+
+  serializeJson(autoconfPayload, mqttPayload);
+  mqttClient.publish(&MQTT_TOPIC_AUTOCONF_TEMPDHT_SENSOR[0], &mqttPayload[0], true);
+  autoconfPayload.clear();
+
+  autoconfPayload["device"] = device.as<JsonObject>();
+  autoconfPayload["availability_topic"] = MQTT_TOPIC_AVAILABILITY;
+  autoconfPayload["state_topic"] = MQTT_TOPIC_STATE;
+  autoconfPayload["name"] = identifier + String(" HumiDht");
+  autoconfPayload["unit_of_measurement"] = "%";
+  autoconfPayload["value_template"] = "{{value_json.humiDht | round(1, 'ceil') }}";
+  autoconfPayload["unique_id"] = identifier + String("_humiDht");
+  autoconfPayload["icon"] = "mdi:water-boiler";
+
+  serializeJson(autoconfPayload, mqttPayload);
+  mqttClient.publish(&MQTT_TOPIC_AUTOCONF_HUMIDHT_SENSOR[0], &mqttPayload[0], true);
   autoconfPayload.clear();
 }
