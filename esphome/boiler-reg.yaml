@@ -1,0 +1,66 @@
+esphome:
+  name: boiler_regulator
+
+esp32:
+  board: nodemcu-32s
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "boiler"
+
+ota:
+  password: "boiler"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Boiler Regulator"
+    password: "pJhw3SecETWo"
+
+captive_portal:
+    
+
+servo:
+  - id: my_servo
+    output: pwm_output
+    transition_length: 5s
+
+# Example output platform
+# On ESP32, use ledc output
+output:
+  - platform: ledc
+    id: pwm_output
+    pin: GPIO26
+    frequency: 50 Hz
+
+sensor:
+  - platform: template
+    name: "boiler_regulator.power"
+    id: power_value
+    unit_of_measurement: "%"
+    lambda: return id(slider_input).state / 1400 * 100;
+    update_interval: 5s
+
+number:
+  - platform: template
+    name: "boiler_regulator.value"
+    unit_of_measurement: "W"
+    id: slider_input
+    initial_value: 0
+    min_value: 0
+    max_value: 1400
+    optimistic: true
+    step: 50
+    on_value:
+      then:
+        - servo.write:
+            id: my_servo
+            level: !lambda return ( id(slider_input).state * 200/1400 - 100 ) / 100;

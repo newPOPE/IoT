@@ -1,0 +1,71 @@
+esphome:
+  name: zavlaha
+
+esp32:
+  board: upesy_wroom
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "zavlaha"
+
+ota:
+  password: "zavlaha"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Zavlaha Fallback Hotspot"
+    password: "TvuzcubPrGBL"
+
+captive_portal:
+
+sprinkler:
+  - id: lawn_sprinkler_ctrlr
+    main_switch: "Lawn Sprinklers"
+    auto_advance_switch: "Lawn Sprinklers Auto Advance"
+    reverse_switch: "Lawn Sprinklers Reverse"
+    multiplier_number: "Lawn Sprinkler Multiplier"
+    repeat_number: "Lawn Sprinkler Repeat"
+    #valve_overlap: 0s
+    valve_open_delay: 2s
+    valves:
+      - valve_switch: "Front Lawn"
+        enable_switch: "Enable Front Lawn"
+        run_duration_number: "Front Yard Run Duration"
+        valve_switch_id: lawn_sprinkler_valve_sw0
+      - valve_switch: "Side Lawn"
+        enable_switch: "Enable Side Lawn"
+        run_duration_number: "Side Yard Run Duration"
+        valve_switch_id: lawn_sprinkler_valve_sw1
+      - valve_switch: "Side Lawn 1"
+        enable_switch: "Enable Side Lawn 1"
+        run_duration_number: "Side Yard Run Duration"
+        valve_switch_id: lawn_sprinkler_valve_sw2
+      - valve_switch: "Side Lawn 2"
+        enable_switch: "Enable Side Lawn 2"
+        run_duration_number: "Side Yard Run Duration"
+        valve_switch_id: lawn_sprinkler_valve_sw3
+
+
+
+switch:
+  - platform: gpio
+    id: lawn_sprinkler_valve_sw0
+    pin: 25
+  - platform: gpio
+    id: lawn_sprinkler_valve_sw1
+    pin: 33
+  - platform: gpio
+    id: lawn_sprinkler_valve_sw2
+    pin: 26
+  - platform: gpio
+    id: lawn_sprinkler_valve_sw3
+    pin: 27

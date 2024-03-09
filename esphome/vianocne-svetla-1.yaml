@@ -1,0 +1,97 @@
+esphome:
+  name: vianoce-svetla-1
+
+esp8266:
+  board: nodemcuv2
+
+#esp32:
+#  board: upesy_wroom
+#  framework:
+#    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "foobar"
+
+ota:
+  password: "foobar"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Pwm Driver Test Fallback Hotspot"
+    password: "PjM5wL45BzxI"
+
+captive_portal:
+
+
+number:
+  - platform: template
+    name: "Intezita"
+    id: slider_input
+    initial_value: 50
+    min_value: 0
+    max_value: 80
+    unit_of_measurement: "%"
+    optimistic: true
+    step: 10
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: 'return id(slider_input).state > 80;'
+            then:
+              - number.set:
+                  id: slider_input
+                  value: 80
+        - light.control:
+            id: generic
+            brightness: !lambda return id(slider_input).state / 100;
+            
+      #    id: gpio_4
+      #    frequency: !lambda return id(gpio_4).state * (40000000 / 100);
+
+#        if:
+#          condition: 
+#            lambda: "return id(slider_input).state > 50;"
+#          then:
+#            - switch.turn_on: sw
+#          else:
+#            - switch.turn_off: sw
+        
+
+            
+output:
+  - platform: esp8266_pwm
+    pin: GPIO2
+    id: gpio_4
+  #- platform: gpio
+  #  pin: 4
+  #  id: 'generic_out'
+light:
+  - platform: monochromatic
+    output: gpio_4
+    name: "Zapnut"
+    id: generic
+    on_turn_on:
+      then: 
+        - number.set:
+            id: slider_input
+            value: 50
+    #frequency: 40000000
+
+
+#switch:
+#  - platform: output
+#    name: "Generic Output"
+#    output: 'generic_out'
+#    id: sw
+
+
+    

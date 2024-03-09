@@ -1,0 +1,43 @@
+esphome:
+  name: brana
+
+esp8266:
+  board: nodemcuv2
+
+#esp32:
+#  board: upesy_wroom
+#  framework:
+#    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "foobar"
+
+ota:
+  password: "foobar"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Brana Fallback Hotspot"
+    password: "PjM5wL45BzxI"
+
+captive_portal:
+
+
+switch:
+  - platform: gpio
+    pin:
+      number: 2
+      inverted: true
+    name: "Otvorit branu"
+    id: relay
+    on_turn_on:
+      - delay: 100ms
+      - switch.turn_off: relay

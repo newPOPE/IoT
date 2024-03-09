@@ -1,0 +1,77 @@
+esphome:
+  name: boiler_temp
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "boiler_temp"
+
+ota:
+  password: "boiler_temp"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Boiler Temp Fallback Hotspot"
+    password: "WyN1uYCxMZBz"
+
+captive_portal:
+
+dallas:
+  - pin: GPIO14
+    id: hub_1
+    update_interval: 15s
+  - pin: GPIO12
+    id: hub_2
+    update_interval: 15s
+
+sensor:
+  - platform: dht
+    pin: 0
+    update_interval: 16s
+    temperature:
+      id: t0
+      name: "boiler - teplota"
+        
+    humidity:
+      name: "boiler - vlhkost"
+
+  - platform: dallas
+    id: t1
+    dallas_id: hub_1
+    address: 0x83e39f9d1e64ff28
+    name: "boiler - 1"
+    
+  - platform: dallas
+    id: t2
+    dallas_id: hub_2
+    address: 0xe864da9d1e64ff28
+    name: "boiler - 2"
+
+  - platform: homeassistant
+    id: power
+    entity_id: sensor.boiler_prikon
+
+i2c:
+  sda: D2
+  scl: D1
+  frequency: 800kHz
+
+display:
+  - platform: lcd_pcf8574
+    dimensions: 16x2
+    address: 0x27
+    update_interval: 5s
+    lambda: |-
+      it.printf(0, 0, "T1:%.1f", id(t1).state);
+      it.printf(10, 0, "P:%.0f", id(power).state);
+      it.printf(0, 1, "T2:%.1f", id(t2).state);
+      it.printf(10, 1, "T:%.0f", id(t0).state);

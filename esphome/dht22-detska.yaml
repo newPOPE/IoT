@@ -1,0 +1,57 @@
+esphome:
+  name: dht22-detska
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "dht22-detska"
+
+ota:
+  password: "dht22-detska"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Dht22-Detska Fallback Hotspot"
+    password: "WCH0daFOWpgV"
+
+captive_portal:
+    
+sensor:
+  - platform: dht
+    pin: D3
+    temperature:
+      name: "Detska - teplota"
+      filters:
+        - offset: -4
+        
+    humidity:
+      name: "Detska - vlhkost"
+      filters:
+        - calibrate_linear:
+          # Map 0.0 (from sensor) to 0.0 (true value)
+          - 46.5 -> 52
+          - 53 -> 56
+    update_interval: 10s
+    model: DHT22
+  - platform: wifi_signal # Reports the WiFi signal strength/RSSI in dB
+    name: "WiFi Signal dB"
+    id: wifi_signal_db
+    update_interval: 60s
+    entity_category: "diagnostic"
+
+  - platform: copy # Reports the WiFi signal strength in %
+    source_id: wifi_signal_db
+    name: "WiFi Signal Percent"
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
+    unit_of_measurement: "Signal %"
+    entity_category: "diagnostic"

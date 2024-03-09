@@ -1,0 +1,114 @@
+esphome:
+  name: fve_monitor_lcd
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+ota:
+  password: "fve_monitor_lcd"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Fve Monitor Lcd Fallback Hotspot"
+    password: "mCZA3AaF5PQ6"
+
+captive_portal:
+
+api:
+
+i2c:
+  sda: D2
+  scl: D1
+  frequency: 800kHz
+
+globals:
+   - id: Ppv1L
+     type: String
+     restore_value: no
+     initial_value: '"_"'
+   - id: Epv1_todayL
+     type: String
+     restore_value: no
+     initial_value: '"_"'
+   - id: BatterySOC
+     type: String
+     restore_value: no
+     initial_value: '"_"'
+   - id: Bat_powerdirection
+     type: String
+     restore_value: no
+     initial_value: '"_"'
+   - id: OP_WattL
+     type: String
+     restore_value: no
+     initial_value: '"_"'
+   - id: InvTemp
+     type: String
+     restore_value: no
+     initial_value: '"_"'
+
+
+
+
+mqtt:
+  broker: 192.168.2.200
+  on_json_message:
+    topic: "growatt-agent/inverter-1/state"
+    then: 
+      - lambda: |-
+          id(Ppv1L) = x["Ppv1L"].as<String>();
+          id(Epv1_todayL) = x["Epv1_todayL"].as<String>();
+          id(BatterySOC) = x["BatterySOC"].as<String>();
+          id(Bat_powerdirection) = x["Bat_powerdirection"].as<String>();
+          id(OP_WattL) = x["OP_WattL"].as<String>();
+          id(InvTemp) = x["InvTemp"].as<String>();
+
+sensor:
+  - platform: homeassistant
+    id: soc
+    entity_id: sensor.pytes_soc
+
+  - platform: homeassistant
+    id: soc1
+    entity_id: sensor.battery1_state_of_charge
+
+  - platform: homeassistant
+    id: soc2
+    entity_id: sensor.battery2_state_of_charge
+  
+  - platform: homeassistant
+    id: pytes_power
+    entity_id: sensor.pytes_power
+
+  - platform: homeassistant
+    id: pv_power
+    entity_id: sensor.growatt_1_pv1_power
+
+  - platform: homeassistant
+    id: energy_today
+    entity_id: sensor.growatt_1_pv1_energy_today
+
+text_sensor:
+  - platform: homeassistant
+    id: status
+    entity_id: sensor.growatt_1_status
+
+display:
+  - platform: lcd_pcf8574
+    dimensions: 20x4
+    address: 0x27
+    lambda: |-
+      it.printf(0, 0, "S: %s", id(status).state.c_str());
+      it.printf(0, 1, "B: %.0f/%.0f%% | %.0fW", id(soc1).state, id(soc2).state, id(pytes_power).state);
+      it.printf(0, 2, "P: %.0fW ", id(pv_power).state );
+      it.printf(10, 2, "| %.1fkWh", id(energy_today).state );
+      it.print(0, 3, std::string("L: ") + std::string(id(OP_WattL).c_str()) + std::string("W"));
+      it.print(10, 3, std::string("| ") + std::string(id(InvTemp).c_str()) + std::string("C"));
+      

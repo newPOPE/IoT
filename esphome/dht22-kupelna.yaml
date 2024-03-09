@@ -1,0 +1,47 @@
+esphome:
+  name: dht22-kupelna
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "dht22-kupelna"
+
+ota:
+  password: "dht22-kupelna"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Dht22-kupelna Fallback Hotspot"
+    password: "WCH0daFOWpgV"
+
+captive_portal:
+    
+sensor:
+  - platform: dht
+    pin: D3
+    temperature:
+      name: "kupelna - teplota"
+      filters: 
+        - offset: -4.0
+      #  - calibrate_linear:
+          # Map 0.0 (from sensor) to 0.0 (true value)
+      #    - 4.9 -> 3.4
+      #    - 27 -> 22.7
+    humidity:
+      name: "kupelna - vlhkost"
+      filters:
+        - calibrate_linear:
+          # Map 0.0 (from sensor) to 0.0 (true value)
+          - 46.4 -> 52
+          - 56 -> 56
+    update_interval: 10s
+    model: DHT22

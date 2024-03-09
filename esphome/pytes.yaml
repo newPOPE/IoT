@@ -1,0 +1,158 @@
+esphome:
+  name: pytes
+
+external_components:
+  - source:
+      type: local
+      path: my_components
+    components: [ pytes ]
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+  baud_rate: 0
+
+# Enable Home Assistant API
+api:
+  password: "pytes"
+
+ota:
+  password: "pytes"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Pytes Fallback Hotspot"
+    password: "asOgb9NZzjty"
+
+captive_portal:
+
+uart:
+  id: uart_bus
+  tx_pin: 1
+  rx_pin: 3
+  baud_rate: 115200
+  rx_buffer_size: 2048
+  #debug:
+  #  direction: BOTH
+  #  dummy_receiver: false
+  #  after:
+  #    delimiter: "\n"
+  #  sequence:
+  #    - lambda: UARTDebug::log_string(direction, bytes);
+
+pytes:
+  update_interval: 5s
+
+sensor:
+  - platform: pytes
+    battery: 1
+
+    voltage:
+      name: "Battery1 Voltage"
+      id: bat1_voltage
+    current:
+      name: "Battery1 Current"
+      id: bat1_current
+    coulomb:
+      name: "Battery1 State of Charge"
+      id: bat1_soc
+    voltage_low:
+      name: "Battery1 Low Voltage"
+      id: bat1_low_voltage
+    voltage_high:
+      name: "Battery1 High Voltage"
+      id: bat1_high_voltage
+    temperature:
+      name: "Battery1 Temperature"
+
+  - platform: template
+    id: battery1_voltage_diff
+    unit_of_measurement: mV
+    name: "Battery1 Voltage Diff"
+    lambda: return (id(bat1_high_voltage).state - id(bat1_low_voltage).state) * 1000;
+
+  - platform: pytes
+    battery: 2
+
+    voltage:
+      name: "Battery2 Voltage"
+      id: bat2_voltage
+    current:
+      name: "Battery2 Current"
+      id: bat2_current
+    coulomb:
+      name: "Battery2 State of Charge"
+      id: bat2_soc
+    voltage_low:
+      name: "Battery2 Low Voltage"
+      id: bat2_low_voltage
+    voltage_high:
+      name: "Battery2 High Voltage"
+      id: bat2_high_voltage
+    temperature:
+      name: "Battery2 Temperature"
+
+  - platform: template
+    id: battery2_voltage_diff
+    unit_of_measurement: mV
+    name: "Battery2 Voltage Diff"
+    lambda: return (id(bat2_high_voltage).state - id(bat2_low_voltage).state) * 1000;
+
+  - platform: template
+    id: Pytes_power
+    name: "Pytes power"
+    unit_of_measurement: W
+    lambda: |-
+      auto pwr1 = id(bat1_voltage).state * id(bat1_current).state;
+      auto pwr2 = id(bat2_voltage).state * id(bat2_current).state;
+      auto pwr = pwr1 + pwr2;
+      id(combined_charge_power).publish_state(max(pwr, 0.0f));
+      id(combined_discharge_power).publish_state(max(-pwr, 0.0f));
+      id(combined_soc).publish_state((id(bat1_soc).state + id(bat2_soc).state) / 2);
+      return pwr;
+    update_interval: 5s
+    device_class: power
+    state_class: measurement
+    icon: "mdi:battery-sync-outline"
+
+  - platform: template
+    id: combined_soc
+    name: "Pytes SOC"
+    unit_of_measurement: "%"
+    icon: "mdi:battery"
+
+  - platform: template
+    id: combined_charge_power
+
+  - platform: template
+    id: combined_discharge_power
+
+  - platform: integration
+    name: "Pytes charging"
+    sensor: combined_charge_power
+    time_unit: h
+    state_class: total_increasing
+    device_class: energy
+    unit_of_measurement: "Wh"
+
+  - platform: integration
+    name: "Pytes discharging"
+    sensor: combined_discharge_power
+    time_unit: h
+    state_class: total_increasing
+    device_class: energy
+    unit_of_measurement: "Wh"
+
+switch:
+  - platform: restart
+    name: "Pytes Restart"
+
+
+
+

@@ -1,0 +1,58 @@
+esphome:
+  name: vindriktning-1
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "vindriktning-1"
+
+ota:
+  password: "vindriktning-1"
+
+wifi:
+  ssid: "adamkis"
+  password: "KonadrAA"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Vindriktning Fallback Hotspot"
+    password: "asOgb9NZzjtx"
+
+captive_portal:
+
+uart:
+  rx_pin: D2
+  baud_rate: 9600
+  #debug:
+  #  direction: BOTH
+  #  dummy_receiver: false
+  #  after:
+  #    delimiter: "\n"
+  #  sequence:
+  #    - lambda: UARTDebug::log_string(direction, bytes);
+
+
+
+sensor:
+  - platform: pm1006
+    pm_2_5:
+      name: "Vindriktning 1 PM 2.5µm"
+
+  - platform: dht
+    pin: D3
+    temperature:
+      name: "Vindriktning 1 temperature"
+          
+    humidity:
+      name: "Vindriktning 1 humidity"
+        
+    model: DHT22
+    update_interval: 10s
+
+
+
