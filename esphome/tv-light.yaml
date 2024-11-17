@@ -27,6 +27,17 @@ wifi:
 
 captive_portal:
 
+output:
+  - platform: esp8266_pwm
+    pin: GPIO02
+    id: gpio_output
+
+light:
+  - platform: monochromatic
+    output: gpio_output
+    name: "LED light"
+    id: light_control
+    default_transition_length: 2s
             
 # Binary input on D5 (GPIO14)
 binary_sensor:
@@ -36,17 +47,17 @@ binary_sensor:
     id: binary_input
     on_press:
       then:
-        - switch.turn_on: output
+        - light.turn_on: light_control
     on_release:
       then:
-        - switch.turn_off: output
+        - light.turn_off: light_control
 
 # Output on GPIO02
-switch:
-  - platform: gpio
-    pin: GPIO02
-    id: output
-    name: "LED light"
+#switch:
+#  - platform: gpio
+#    pin: GPIO02
+#    id: output
+#    name: "LED light"
 
 #switch:
 #  - platform: output
