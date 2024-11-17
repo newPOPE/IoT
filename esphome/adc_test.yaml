@@ -1,5 +1,5 @@
 esphome:
-  name: brana
+  name: adc_test
 
 esp8266:
   board: nodemcuv2
@@ -13,8 +13,11 @@ esp8266:
 logger:
 
 # Enable Home Assistant API
-api:
-  password: "foobar"
+#api:
+# password: "foobar"
+
+mqtt:
+  broker: 192.168.2.200
 
 ota:
   password: "foobar"
@@ -25,19 +28,21 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Brana Fallback Hotspot"
+    ssid: "ADC test Fallback Hotspot"
     password: "PjM5wL45BzxI"
 
 captive_portal:
 
+sensor:
+  - platform: adc
+    pin: A0
+    name: "Battery Voltage"
+    update_interval: 10s
+    accuracy_decimals: 3
+    entity_category: diagnostic
+    filters:
+      - multiply: 5.11759
 
-switch:
-  - platform: gpio
-    pin:
-      number: 2
-      inverted: true
-    name: "Otvorit branu"
-    id: relay
-    on_turn_on:
-      - delay: 160ms
-      - switch.turn_off: relay
+deep_sleep:
+  run_duration: 30s
+  sleep_duration: 2min

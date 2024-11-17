@@ -100,8 +100,23 @@ text_sensor:
     id: status
     entity_id: sensor.growatt_1_status
 
+switch:
+  - platform: template
+    id: fve_monitor_my_switch
+    #lambda: return id(fve_monitor_my_switch);
+    name: "FVE monitor backlight"
+    optimistic: true
+    on_turn_on: 
+      then: 
+        - lambda: id(mydisplay).backlight();
+    on_turn_off:
+      then: 
+        - lambda: id(mydisplay).no_backlight();
+
+
 display:
   - platform: lcd_pcf8574
+    id: mydisplay
     dimensions: 20x4
     address: 0x27
     lambda: |-
