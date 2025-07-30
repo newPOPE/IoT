@@ -38,6 +38,10 @@ light:
     name: "LED light"
     id: light_control
     default_transition_length: 2s
+
+time:
+  - platform: sntp
+    id: sntp_time
             
 # Binary input on D5 (GPIO14)
 binary_sensor:
@@ -46,8 +50,14 @@ binary_sensor:
     name: "USB tracker"
     id: binary_input
     on_press:
-      then:
-        - light.turn_on: light_control
+      if:
+        condition: 
+          lambda: return id(sntp_time).now().hour > 12 && id(sntp_time).now().hour < 23;
+        then:
+          - light.turn_on: light_control
+          - light.control:
+              id: light_control
+              brightness: 0.5
     on_release:
       then:
         - light.turn_off: light_control

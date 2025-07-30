@@ -12,7 +12,8 @@ api:
   password: "dht22-detska"
 
 ota:
-  password: "dht22-detska"
+  - platform: esphome
+    password: "dht22-detska"
 
 wifi:
   ssid: "adamkis"
@@ -31,7 +32,7 @@ sensor:
     temperature:
       name: "Detska - teplota"
       filters:
-        - offset: -4
+        - offset: -2
         
     humidity:
       name: "Detska - vlhkost"
@@ -40,7 +41,7 @@ sensor:
           # Map 0.0 (from sensor) to 0.0 (true value)
           - 46.5 -> 52
           - 53 -> 56
-    update_interval: 10s
+    update_interval: 60s
     model: DHT22
   - platform: wifi_signal # Reports the WiFi signal strength/RSSI in dB
     name: "WiFi Signal dB"

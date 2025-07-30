@@ -8,7 +8,8 @@ esp8266:
 logger:
 
 ota:
-  password: "fve_monitor_lcd"
+  - platform: esphome
+    password: "fve_monitor_lcd"
 
 wifi:
   ssid: "adamkis"
@@ -68,7 +69,6 @@ mqtt:
           id(BatterySOC) = x["BatterySOC"].as<String>();
           id(Bat_powerdirection) = x["Bat_powerdirection"].as<String>();
           id(OP_WattL) = x["OP_WattL"].as<String>();
-          id(InvTemp) = x["InvTemp"].as<String>();
 
 sensor:
   - platform: homeassistant
@@ -94,6 +94,14 @@ sensor:
   - platform: homeassistant
     id: energy_today
     entity_id: sensor.growatt_1_pv1_energy_today
+
+  - platform: homeassistant
+    id: invfanspeed
+    entity_id: sensor.growatt_1_invfanspeed
+
+  - platform: homeassistant
+    id: inverter_temp
+    entity_id: sensor.growatt_1_inverter_temp
 
 text_sensor:
   - platform: homeassistant
@@ -125,5 +133,5 @@ display:
       it.printf(0, 2, "P: %.0fW ", id(pv_power).state );
       it.printf(10, 2, "| %.1fkWh", id(energy_today).state );
       it.print(0, 3, std::string("L: ") + std::string(id(OP_WattL).c_str()) + std::string("W"));
-      it.print(10, 3, std::string("| ") + std::string(id(InvTemp).c_str()) + std::string("C"));
+      it.printf(10, 3, "| %.1f/%.0f", id(inverter_temp).state, id(invfanspeed).state);
       

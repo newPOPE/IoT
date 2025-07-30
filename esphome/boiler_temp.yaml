@@ -12,7 +12,8 @@ api:
   password: "boiler_temp"
 
 ota:
-  password: "boiler_temp"
+  - platform: esphome
+    password: "boiler_temp"
 
 wifi:
   ssid: "adamkis"
@@ -25,13 +26,14 @@ wifi:
 
 captive_portal:
 
-dallas:
+one_wire:
   - pin: GPIO14
     id: hub_1
-    update_interval: 30s
+    platform: gpio
+
   - pin: GPIO12
     id: hub_2
-    update_interval: 15s
+    platform: gpio
 
 sensor:
   - platform: dht
@@ -40,19 +42,21 @@ sensor:
     temperature:
       id: t0
       name: "boiler - teplota"
+      filters:
+        - offset: -1.2
         
     humidity:
       name: "boiler - vlhkost"
 
-  - platform: dallas
+  - platform: dallas_temp
     id: t1
-    dallas_id: hub_1
+    one_wire_id: hub_1
     address: 0x83e39f9d1e64ff28
     name: "boiler - 1"
     
-  - platform: dallas
+  - platform: dallas_temp
     id: t2
-    dallas_id: hub_2
+    one_wire_id: hub_2
     address: 0xe864da9d1e64ff28
     name: "boiler - 2"
 

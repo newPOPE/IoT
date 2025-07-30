@@ -12,7 +12,8 @@ api:
   password: "vindriktning-2"
 
 ota:
-  password: "vindriktning-2"
+  - platform: esphome
+    password: "vindriktning-2"
 
 wifi:
   ssid: "adamkis"
@@ -47,12 +48,14 @@ sensor:
     pin: D3
     temperature:
       name: "Vindriktning 2 temperature"
+      filters:
+        - offset: -2.0
           
     humidity:
       name: "Vindriktning 2 humidity"
         
     model: DHT22
-    update_interval: 10s
+    update_interval: 60s
 
 
 

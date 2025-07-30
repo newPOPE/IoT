@@ -14,7 +14,8 @@ api:
   password: "boiler"
 
 ota:
-  password: "boiler"
+  - platform: esphome
+    password: "boiler"
 
 wifi:
   ssid: "adamkis"

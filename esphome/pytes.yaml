@@ -19,7 +19,8 @@ api:
   password: "pytes"
 
 ota:
-  password: "pytes"
+  - platform: esphome
+    password: "pytes"
 
 wifi:
   ssid: "adamkis"
@@ -76,6 +77,7 @@ sensor:
     unit_of_measurement: mV
     name: "Battery1 Voltage Diff"
     lambda: return (id(bat1_high_voltage).state - id(bat1_low_voltage).state) * 1000;
+    update_interval: 5s
 
   - platform: pytes
     battery: 2
@@ -103,6 +105,7 @@ sensor:
     unit_of_measurement: mV
     name: "Battery2 Voltage Diff"
     lambda: return (id(bat2_high_voltage).state - id(bat2_low_voltage).state) * 1000;
+    update_interval: 5s
 
   - platform: template
     id: Pytes_power
